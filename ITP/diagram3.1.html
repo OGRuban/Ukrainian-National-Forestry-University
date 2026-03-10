@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Гістограма Табличної Функції</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { margin: 0; background-color: #f4f4f4; font-family: sans-serif; }
+        #plot { width: 100vw; height: 100vh; }
+        .header { position: absolute; top: 10px; width: 100%; text-align: center; z-index: 10; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Графічне подання координат вузлів та значень табличної функції</h2>
+</div>
+
+<div id="plot"></div>
+
+<script>
+    const dataPoints = [
+        {x: -110, y: 30,  v: 80},
+        {x: -30,  y: -50, v: 90},
+        {x: -30,  y: 30,  v: 20},
+        {x: -30,  y: 110, v: 150},
+        {x: 60,   y: -50, v: 130},
+        {x: 70,   y: 30,  v: 120}
+    ];
+
+    const sortedV = [...dataPoints].map(p => p.v).sort((a, b) => a - b);
+    
+    function determineColor(v) {
+        const index = sortedV.indexOf(v);
+        if (index >= sortedV.length - 2) return '#ff0000'; 
+        if (index <= 1) return '#0000ff';               
+        return '#ffff00';                              
+    }
+
+    function createBar(x, y, v) {
+        const width = 10; 
+        const color = determineColor(v);
+        return {
+            type: 'mesh3d',
+            x: [x-width, x+width, x+width, x-width, x-width, x+width, x+width, x-width],
+            y: [y-width, y-width, y+width, y+width, y-width, y-width, y+width, y+width],
+            z: [0, 0, 0, 0, v, v, v, v],
+            i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+            j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+            k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+            color: color,
+            flatshading: true,
+            name: `V=${v} (X:${x}, Y:${y})`,
+            hoverinfo: 'name'
+        };
+    }
+
+    const traces = dataPoints.map(p => createBar(p.x, p.y, p.v));
+
+    const layout = {
+        scene: {
+            xaxis: { title: 'X', range: [-130, 100], gridcolor: '#ddd' },
+            yaxis: { title: 'Y', range: [-70, 130], gridcolor: '#ddd' },
+            zaxis: { title: 'V', range: [0, 160], gridcolor: '#ddd' },
+            camera: {
+                eye: { x: 1.5, y: -1.5, z: 1.2 } 
+            },
+            aspectmode: 'manual',
+            aspectratio: { x: 1, y: 1, z: 0.8 }
+        },
+        margin: { l: 0, r: 0, b: 0, t: 50 },
+        showlegend: false
+    };
+
+    Plotly.newPlot('plot', traces, layout);
+</script>
+
+</body>
+</html>
